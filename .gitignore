@@ -2,5 +2,5 @@ coverage/*
 node_modules/*
 
 # only commit common.js version for now
-dist/form.umd*
+dist/vue-reactive-storage.umd*
 dist/demo.html
