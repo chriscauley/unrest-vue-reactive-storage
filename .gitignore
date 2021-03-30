@@ -1,0 +1,6 @@
+coverage/*
+node_modules/*
+
+# only commit common.js version for now
+dist/form.umd*
+dist/demo.html
