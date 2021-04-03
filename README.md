@@ -59,3 +59,7 @@ yarn publish
 ## TODO
 
 * I want to make this true about `store.save(data)`: `store.getOne(id)` will then return the object without triggering a request, but all `getPage` requests will be marked stale.
+
+* Document ReactiveRestApi and make equivalent apis for memory+local storages.
+
+* Maybe make a ReactiveSocketApi (?)

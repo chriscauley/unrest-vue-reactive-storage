@@ -11,7 +11,10 @@ export const getClient = () => {
   return client
 }
 
-export const ReactiveRestApi = ({ client }) => {
+const noop = a => a
+
+export const ReactiveRestApi = options => {
+  const { client, fromServer = noop, toServer = noop } = options
   let stale_at = new Date().valueOf()
   const url_fetched_at = {}
   const pending = {}
@@ -29,15 +32,15 @@ export const ReactiveRestApi = ({ client }) => {
       const promise = new Promise(r => (resolve = r))
       pending[url].push(resolve)
       return promise
-    } else if (needs_fetch && !state.loading[url]) {
+    } else if (needs_fetch) {
       state.loading[url] = true
       return client.get(url).then(data => {
         url_fetched_at[url] = new Date().valueOf()
         state.byUrl[url] = data
         if (data.id) {
-          state.byId[data.id] = data
+          state.byId[data.id] = fromServer(data)
         } else if (data.items) {
-          data.items.forEach(item => (state.byId[item.id] = item))
+          data.items.forEach(item => (state.byId[item.id] = fromServer(item)))
         }
         state.loading[url] = false
         pending[url]?.forEach(resolve => resolve(data))
@@ -62,29 +65,31 @@ export const ReactiveRestApi = ({ client }) => {
     fetch,
     get,
     markStale,
-    post: (url, data) => client.post(url, data).then(markStale),
+    post: (url, data) => client.post(url, toServer(data)).then(markStale),
     delete: url => client.delete(url).then(markStale),
   }
 }
 
-export default (slug, { api, client, collection_slug } = {}) => {
-  collection_slug = collection_slug || `${slug}s`
-  client = client || getClient()
-  api = api || ReactiveRestApi({ client })
+export default (slug, options = {}) => {
+  const { append_slash = true, fromServer, toServer } = options
+  const SLASH = append_slash ? '/' : ''
+  const collection_slug = options.collection_slug || `${slug}s`
+  const client = options.client || getClient()
+  const api = options.api || ReactiveRestApi({ client, fromServer, toServer })
 
   return {
     api,
     getOne: id => {
-      return api.state.byId[id] || api.get(`${slug}/${id}`)
+      return api.get(`${slug}/${id}${SLASH}`)
     },
     getPage: ({ page, limit = 25 } = {}) => {
-      const query = '?' + qs.stringify({ page, limit })
-      return api.get(`${collection_slug}?${query}`)
+      const query = qs.stringify({ page, limit })
+      return api.get(`${collection_slug}${SLASH}?${query}`)
     },
     save(data) {
-      const url = data.id ? `${slug}/${data.id}` : slug
+      const url = data.id ? `${slug}/${data.id}${SLASH}` : slug
       return api.post(url, data)
     },
-    delete: ({ id }) => api.delete(`${slug}/${id}`),
+    delete: ({ id }) => api.delete(`${slug}/${id}${SLASH}`),
   }
 }

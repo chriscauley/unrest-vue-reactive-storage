@@ -6699,8 +6699,17 @@ var RestStorage_getClient = function getClient() {
   }, handleError);
   return client;
 };
-var RestStorage_ReactiveRestApi = function ReactiveRestApi(_ref) {
-  var client = _ref.client;
+
+var noop = function noop(a) {
+  return a;
+};
+
+var RestStorage_ReactiveRestApi = function ReactiveRestApi(options) {
+  var client = options.client,
+      _options$fromServer = options.fromServer,
+      fromServer = _options$fromServer === void 0 ? noop : _options$fromServer,
+      _options$toServer = options.toServer,
+      toServer = _options$toServer === void 0 ? noop : _options$toServer;
   var stale_at = new Date().valueOf();
   var url_fetched_at = {};
   var pending = {};
@@ -6721,7 +6730,7 @@ var RestStorage_ReactiveRestApi = function ReactiveRestApi(_ref) {
       });
       pending[url].push(resolve);
       return promise;
-    } else if (needs_fetch && !state.loading[url]) {
+    } else if (needs_fetch) {
       state.loading[url] = true;
       return client.get(url).then(function (data) {
         var _pending$url;
@@ -6730,10 +6739,10 @@ var RestStorage_ReactiveRestApi = function ReactiveRestApi(_ref) {
         state.byUrl[url] = data;
 
         if (data.id) {
-          state.byId[data.id] = data;
+          state.byId[data.id] = fromServer(data);
         } else if (data.items) {
           data.items.forEach(function (item) {
-            return state.byId[item.id] = item;
+            return state.byId[item.id] = fromServer(item);
           });
         }
 
@@ -6764,7 +6773,7 @@ var RestStorage_ReactiveRestApi = function ReactiveRestApi(_ref) {
     get: get,
     markStale: markStale,
     post: function post(url, data) {
-      return client.post(url, data).then(markStale);
+      return client.post(url, toServer(data)).then(markStale);
     },
     delete: function _delete(url) {
       return client.delete(url).then(markStale);
@@ -6772,40 +6781,43 @@ var RestStorage_ReactiveRestApi = function ReactiveRestApi(_ref) {
   };
 };
 /* harmony default export */ var RestStorage = (function (slug) {
-  var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-      api = _ref2.api,
-      client = _ref2.client,
-      collection_slug = _ref2.collection_slug;
-
-  collection_slug = collection_slug || "".concat(slug, "s");
-  client = client || RestStorage_getClient();
-  api = api || RestStorage_ReactiveRestApi({
-    client: client
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var _options$append_slash = options.append_slash,
+      append_slash = _options$append_slash === void 0 ? true : _options$append_slash,
+      fromServer = options.fromServer,
+      toServer = options.toServer;
+  var SLASH = append_slash ? '/' : '';
+  var collection_slug = options.collection_slug || "".concat(slug, "s");
+  var client = options.client || RestStorage_getClient();
+  var api = options.api || RestStorage_ReactiveRestApi({
+    client: client,
+    fromServer: fromServer,
+    toServer: toServer
   });
   return {
     api: api,
     getOne: function getOne(id) {
-      return api.state.byId[id] || api.get("".concat(slug, "/").concat(id));
+      return api.get("".concat(slug, "/").concat(id).concat(SLASH));
     },
     getPage: function getPage() {
-      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          page = _ref3.page,
-          _ref3$limit = _ref3.limit,
-          limit = _ref3$limit === void 0 ? 25 : _ref3$limit;
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          page = _ref.page,
+          _ref$limit = _ref.limit,
+          limit = _ref$limit === void 0 ? 25 : _ref$limit;
 
-      var query = '?' + querystring_es3_default.a.stringify({
+      var query = querystring_es3_default.a.stringify({
         page: page,
         limit: limit
       });
-      return api.get("".concat(collection_slug, "?").concat(query));
+      return api.get("".concat(collection_slug).concat(SLASH, "?").concat(query));
     },
     save: function save(data) {
-      var url = data.id ? "".concat(slug, "/").concat(data.id) : slug;
+      var url = data.id ? "".concat(slug, "/").concat(data.id).concat(SLASH) : slug;
       return api.post(url, data);
     },
-    delete: function _delete(_ref4) {
-      var id = _ref4.id;
-      return api.delete("".concat(slug, "/").concat(id));
+    delete: function _delete(_ref2) {
+      var id = _ref2.id;
+      return api.delete("".concat(slug, "/").concat(id).concat(SLASH));
     }
   };
 });

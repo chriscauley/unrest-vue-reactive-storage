@@ -7,6 +7,7 @@ module.exports = {
     parser: 'babel-eslint',
   },
   rules: {
+    'no-console': ['error', { allow: ['warn', 'error'] }],
     'no-prototype-builtins': 'off',
     'prettier/prettier': [
       'error',
