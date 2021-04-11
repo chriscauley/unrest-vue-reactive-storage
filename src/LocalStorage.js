@@ -1,5 +1,16 @@
+import { reactive } from 'vue'
 import MemoryStorage from './MemoryStorage'
 import _ls from 'local-storage-json'
+
+export const ReactiveLocalStorage = (options = {}) => {
+  const { LS_KEY, initial = {}, ls = _ls } = options
+  const state = reactive(ls.get(LS_KEY) || initial)
+  const save = data => {
+    Object.assign(state, data)
+    ls.set(LS_KEY, state)
+  }
+  return { state, save }
+}
 
 export default (slug, { ls = _ls, ...options }) => {
   const LS_KEY = `LocalStorage:${slug}`

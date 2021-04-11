@@ -2,19 +2,32 @@ import { reactive } from 'vue'
 import qs from 'querystring'
 import axios from 'axios'
 
+export const getCSRF = (cookie = '') => {
+  return cookie.match(/csrftoken=([^;]+)/)?.[1] || ''
+}
+
 export const getClient = () => {
   const handleError = e => {
     throw e
   }
-  const client = axios.create({ baseURL: '/api/' })
-  client.interceptors.response.use(r => r, handleError)
+  const client = axios.create({
+    baseURL: '/api/',
+    transformRequest(data, headers) {
+      const csrf = getCSRF(typeof document === 'undefined' ? '' : document.cookie)
+      headers.delete['X-CSRFToken'] = csrf
+      headers.post['X-CSRFToken'] = csrf
+      headers.post['Content-Type'] = 'application/json'
+      return JSON.stringify(data)
+    },
+  })
+  client.interceptors.response.use(r => r.data, handleError)
   return client
 }
 
 const noop = a => a
 
-export const ReactiveRestApi = options => {
-  const { client, fromServer = noop, toServer = noop } = options
+export const ReactiveRestApi = (options = {}) => {
+  const { client = getClient(), fromServer = noop, toServer = noop } = options
   let stale_at = new Date().valueOf()
   const url_fetched_at = {}
   const pending = {}
@@ -66,6 +79,7 @@ export const ReactiveRestApi = options => {
     get,
     markStale,
     post: (url, data) => client.post(url, toServer(data)).then(markStale),
+    put: (url, data) => client.put(url, toServer(data)).then(markStale),
     delete: url => client.delete(url).then(markStale),
   }
 }

@@ -1,6 +1,6 @@
-import LocalStorage from './LocalStorage'
+import LocalStorage, { ReactiveLocalStorage } from './LocalStorage'
 import MemoryStorage from './MemoryStorage'
 import RestStorage, { ReactiveRestApi } from './RestStorage'
 
-export default { LocalStorage, MemoryStorage, RestStorage, ReactiveRestApi }
-export { LocalStorage, MemoryStorage, RestStorage, ReactiveRestApi }
+export default { LocalStorage, ReactiveLocalStorage, MemoryStorage, RestStorage, ReactiveRestApi }
+export { LocalStorage, ReactiveLocalStorage, MemoryStorage, RestStorage, ReactiveRestApi }
