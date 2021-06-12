@@ -101,7 +101,7 @@ export default (slug, options = {}) => {
       return api.get(`${collection_slug}${SLASH}?${query}`)
     },
     save(data) {
-      const url = data.id ? `${slug}/${data.id}${SLASH}` : slug
+      const url = data.id ? `${slug}/${data.id}${SLASH}` : `${slug}${SLASH}`
       return api.post(url, data)
     },
     delete: ({ id }) => api.delete(`${slug}/${id}${SLASH}`),

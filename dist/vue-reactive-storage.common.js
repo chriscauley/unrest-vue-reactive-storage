@@ -6769,6 +6769,7 @@ __webpack_require__.d(__webpack_exports__, "ReactiveLocalStorage", function() { 
 __webpack_require__.d(__webpack_exports__, "MemoryStorage", function() { return /* reexport */ MemoryStorage; });
 __webpack_require__.d(__webpack_exports__, "RestStorage", function() { return /* reexport */ RestStorage; });
 __webpack_require__.d(__webpack_exports__, "ReactiveRestApi", function() { return /* reexport */ RestStorage_ReactiveRestApi; });
+__webpack_require__.d(__webpack_exports__, "getClient", function() { return /* reexport */ RestStorage_getClient; });
 
 // CONCATENATED MODULE: ./node_modules/@vue/cli-service/lib/commands/build/setPublicPath.js
 // This file is imported into lib/wc client bundles.
@@ -7060,11 +7061,9 @@ var LocalStorage_ReactiveLocalStorage = function ReactiveLocalStorage() {
       initial = _options$initial === void 0 ? {} : _options$initial,
       _options$ls = options.ls,
       ls = _options$ls === void 0 ? local_storage_json_default.a : _options$ls;
-  var state = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["reactive"])(ls.get(LS_KEY) || options.initial);
+  var state = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["reactive"])(ls.get(LS_KEY) || initial);
 
   var save = function save(data) {
-    console.log('saving', data);
-    console.log(LS_KEY);
     Object.assign(state, data);
     ls.set(LS_KEY, state);
   };
@@ -7261,7 +7260,7 @@ var RestStorage_ReactiveRestApi = function ReactiveRestApi() {
       return api.get("".concat(collection_slug).concat(SLASH, "?").concat(query));
     },
     save: function save(data) {
-      var url = data.id ? "".concat(slug, "/").concat(data.id).concat(SLASH) : slug;
+      var url = data.id ? "".concat(slug, "/").concat(data.id).concat(SLASH) : "".concat(slug).concat(SLASH);
       return api.post(url, data);
     },
     delete: function _delete(_ref2) {
@@ -7279,7 +7278,8 @@ var RestStorage_ReactiveRestApi = function ReactiveRestApi() {
   ReactiveLocalStorage: LocalStorage_ReactiveLocalStorage,
   MemoryStorage: MemoryStorage,
   RestStorage: RestStorage,
-  ReactiveRestApi: RestStorage_ReactiveRestApi
+  ReactiveRestApi: RestStorage_ReactiveRestApi,
+  getClient: RestStorage_getClient
 });
 
 // CONCATENATED MODULE: ./node_modules/@vue/cli-service/lib/commands/build/entry-lib.js
