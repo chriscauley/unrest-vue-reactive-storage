@@ -5,7 +5,7 @@ import _ls from 'local-storage-json'
 export const ReactiveLocalStorage = (options = {}) => {
   const { LS_KEY, initial = {}, ls = _ls } = options
   const state = reactive(ls.get(LS_KEY) || initial)
-  const save = data => {
+  const save = (data) => {
     Object.assign(state, data)
     ls.set(LS_KEY, state)
   }
@@ -15,7 +15,7 @@ export const ReactiveLocalStorage = (options = {}) => {
 export default (slug, { ls = _ls, ...options }) => {
   const LS_KEY = `LocalStorage:${slug}`
   options.inital = ls.get(LS_KEY) || options.initial
-  options.afterSave = state => ls.set(LS_KEY, state)
+  options.afterSave = (state) => ls.set(LS_KEY, state)
   const store = MemoryStorage(slug, options)
   store.LS_KEY = LS_KEY
   return store
