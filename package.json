@@ -1,7 +1,7 @@
 {
   "name": "@unrest/vue-reactive-storage",
   "author": "Chris Cauley <cauley.chris@gmail.com>",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/vue-reactive-storage.common.js",
   "license": "MIT",
   "scripts": {
