@@ -1,8 +1,8 @@
 {
-  "name": "@unrest/vue-reactive-storage",
+  "name": "@unrest/vue-storage",
   "author": "Chris Cauley <cauley.chris@gmail.com>",
   "version": "0.0.3",
-  "main": "dist/vue-reactive-storage.common.js",
+  "main": "dist/vue-storage.common.js",
   "license": "MIT",
   "scripts": {
     "build": "vue-cli-service build --target lib src/index.js --no-clean",
