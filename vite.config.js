@@ -10,11 +10,13 @@ export default defineConfig({
       name: '@unrest/vue-storage',
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'querystring'],
       output: {
         globals: {
           vue: 'Vue',
-        }
+          querystring: 'querystring',
+        },
+        exports: 'named',
       }
     }
   },

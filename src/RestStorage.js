@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import qs from 'querystring'
+import querystring from 'querystring'
 import axios from 'axios'
 
 export const getCSRF = (cookie = '') => {
@@ -97,7 +97,7 @@ export default (slug, options = {}) => {
       return api.get(`${slug}/${id}${SLASH}`)
     },
     getPage: ({ page, limit = 25 } = {}) => {
-      const query = qs.stringify({ page, limit })
+      const query = querystring.stringify({ page, limit })
       return api.get(`${collection_slug}${SLASH}?${query}`)
     },
     save(data) {
