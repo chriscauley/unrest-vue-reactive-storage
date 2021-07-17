@@ -12,9 +12,9 @@ export const ReactiveLocalStorage = (options = {}) => {
   return { state, save }
 }
 
-export default (slug, { ls = _ls, ...options }) => {
+export default (slug, { ls = _ls, ...options } = {}) => {
   const LS_KEY = `LocalStorage:${slug}`
-  options.inital = ls.get(LS_KEY) || options.initial
+  options.initial = ls.get(LS_KEY) || options.initial
   options.afterSave = (state) => ls.set(LS_KEY, state)
   const store = MemoryStorage(slug, options)
   store.LS_KEY = LS_KEY
