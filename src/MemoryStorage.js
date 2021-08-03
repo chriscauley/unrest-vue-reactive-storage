@@ -28,13 +28,15 @@ export default (slug, options = {}) => {
     prepareItem = defaults.prepareItem,
     initial = {},
     afterSave = () => {},
+    fromServer = (d) => d,
+    toServer = (d) => d,
   } = options
   let ID_COUNTER = (Math.max(0, ...Object.keys(initial).map(Number)) || 0) + 1
   const state = reactive(initial)
-  const getOne = (id) => state[id]
+  const getOne = (id) => fromServer(state[id])
   const getPage = ({ page = 1, per_page = 25 } = {}) =>
     makePaginator({
-      items: Object.values(state),
+      items: Object.values(state).map(fromServer),
       per_page,
       page,
     })
@@ -46,7 +48,7 @@ export default (slug, options = {}) => {
     fetchPage: (opts) => Promise.resolve(getPage(opts)),
     save: (data) =>
       newThread(() => {
-        data = prepareItem(data, () => ID_COUNTER++)
+        data = toServer(prepareItem(data, () => ID_COUNTER++))
         state[data.id] = data
         afterSave(state)
         return data
