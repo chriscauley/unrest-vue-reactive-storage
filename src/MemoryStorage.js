@@ -34,12 +34,13 @@ export default (slug, options = {}) => {
   let ID_COUNTER = (Math.max(0, ...Object.keys(initial).map(Number)) || 0) + 1
   const state = reactive(initial)
   const getOne = (id) => fromServer(state[id])
-  const getPage = ({ page = 1, per_page = 25 } = {}) =>
-    makePaginator({
-      items: Object.values(state).map(fromServer),
-      per_page,
-      page,
+  const getPage = ({ page = 1, per_page = 25, query = {} } = {}) => {
+    let items = Object.values(state).map(fromServer)
+    Object.entries(query).forEach(([key, value]) => {
+      items = items.filter((i) => i[key] === value)
     })
+    return makePaginator({ items, per_page, page })
+  }
 
   return {
     getOne,

@@ -96,9 +96,9 @@ export default (slug, options = {}) => {
     getOne: (id) => {
       return api.get(`${slug}/${id}${SLASH}`)
     },
-    getPage: ({ page, limit = 25 } = {}) => {
-      const query = querystring.stringify({ page, limit })
-      return api.get(`${collection_slug}${SLASH}?${query}`)
+    getPage: ({ page, limit = 25, query = {} } = {}) => {
+      const qs = querystring.stringify({ page, limit, ...query })
+      return api.get(`${collection_slug}${SLASH}?${qs}`)
     },
     save(data) {
       const url = data.id ? `${slug}/${data.id}${SLASH}` : `${slug}${SLASH}`
