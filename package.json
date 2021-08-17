@@ -1,7 +1,8 @@
 {
   "name": "@unrest/vue-storage",
   "author": "Chris Cauley <cauley.chris@gmail.com>",
-  "version": "0.0.8",
+  "repository": "https://github.com/chriscauley/unrest-vue-storage",
+  "version": "0.0.9",
   "files": [
     "dist"
   ],
