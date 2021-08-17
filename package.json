@@ -1,8 +1,18 @@
 {
   "name": "@unrest/vue-storage",
   "author": "Chris Cauley <cauley.chris@gmail.com>",
-  "version": "0.0.7",
-  "main": "dist/vue-storage.es.js",
+  "version": "0.0.8",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-storage.umd.js",
+  "module": "./dist/vue-storage.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-storage.es.js",
+      "require": "./dist/vue-storage.umd.js"
+    }
+  },
   "license": "MIT",
   "scripts": {
     "build": "vite build",
