@@ -54,6 +54,8 @@ export const ReactiveRestApi = (options = {}) => {
           state.byId[data.id] = fromServer(data)
         } else if (data.items) {
           data.items.forEach((item) => (state.byId[item.id] = fromServer(item)))
+        } else {
+          state.byUrl[url] = fromServer(data)
         }
         state.loading[url] = false
         pending[url]?.forEach((resolve) => resolve(data))

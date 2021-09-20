@@ -43,6 +43,7 @@ export default (slug, options = {}) => {
   }
 
   return {
+    _state: state,
     getOne,
     getPage,
     fetchOne: (id) => Promise.resolve(getOne(id)),
