@@ -82,7 +82,7 @@ export const ReactiveRestApi = (options = {}) => {
     markStale,
     post: (url, data) => client.post(url, toServer(data)).then(markStale),
     put: (url, data) => client.put(url, toServer(data)).then(markStale),
-    delete: (url) => client.delete(url).then(markStale),
+    delete: (url, data={}) => client.delete(url, {data}).then(markStale),
   }
 }
 
