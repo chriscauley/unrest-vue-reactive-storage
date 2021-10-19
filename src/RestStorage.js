@@ -41,26 +41,31 @@ export const ReactiveRestApi = (options = {}) => {
     const needs_fetch = stale_at > url_fetched_at[url] || !state.byUrl[url]
     if (state.loading[url]) {
       pending[url] = pending[url] || []
-      let resolve
-      const promise = new Promise((r) => (resolve = r))
-      pending[url].push(resolve)
+      const promise = new Promise((resolve, reject) => pending[url].push([resolve, reject]))
       return promise
     } else if (needs_fetch) {
       state.loading[url] = true
-      return client.get(url).then((data) => {
-        url_fetched_at[url] = new Date().valueOf()
-        state.byUrl[url] = data
-        if (data.id) {
-          state.byId[data.id] = fromServer(data)
-        } else if (data.items) {
-          data.items.forEach((item) => (state.byId[item.id] = fromServer(item)))
-        } else {
-          state.byUrl[url] = fromServer(data)
-        }
-        state.loading[url] = false
-        pending[url]?.forEach((resolve) => resolve(data))
-        return data
-      })
+      return client
+        .get(url)
+        .then((data) => {
+          url_fetched_at[url] = new Date().valueOf()
+          state.byUrl[url] = data
+          if (data.id) {
+            state.byId[data.id] = fromServer(data)
+          } else if (data.items) {
+            data.items.forEach((item) => (state.byId[item.id] = fromServer(item)))
+          } else {
+            state.byUrl[url] = fromServer(data)
+          }
+          state.loading[url] = false
+          pending[url]?.forEach(([resolve]) => resolve(data))
+          return data
+        })
+        .catch((error) => {
+          state.loading[url] = false
+          pending[url]?.forEach(([_, reject]) => reject(error))
+          throw error
+        })
     }
     return Promise.resolve(state.byUrl[url])
   }
@@ -82,7 +87,7 @@ export const ReactiveRestApi = (options = {}) => {
     markStale,
     post: (url, data) => client.post(url, toServer(data)).then(markStale),
     put: (url, data) => client.put(url, toServer(data)).then(markStale),
-    delete: (url, data={}) => client.delete(url, {data}).then(markStale),
+    delete: (url, data = {}) => client.delete(url, { data }).then(markStale),
   }
 }
 
