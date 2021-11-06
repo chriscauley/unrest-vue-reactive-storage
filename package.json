@@ -25,7 +25,8 @@
   "dependencies": {
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
-    "local-storage-json": "^1.1.0"
+    "local-storage-json": "^1.1.0",
+    "lodash.debounce": "^4.0.8"
   },
   "devDependencies": {
     "@unrest/eslint-config": "^0.0.4",

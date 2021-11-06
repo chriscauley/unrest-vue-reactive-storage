@@ -1,3 +1,4 @@
+import debounce from 'lodash.debounce'
 import { reactive } from 'vue'
 import querystring from 'querystring'
 import axios from 'axios'
@@ -88,7 +89,7 @@ export const ReactiveRestApi = (options = {}) => {
     post: (url, data) => client.post(url, toServer(data)).then(markStale),
     put: (url, data) => client.put(url, toServer(data)).then(markStale),
     delete: (url, data = {}) => client.delete(url, { data }).then(markStale),
-    isLoading: (url) => state.loading[url]
+    isLoading: (url) => state.loading[url],
   }
 }
 
@@ -99,18 +100,37 @@ export default (slug, options = {}) => {
   const client = options.client || getClient()
   const api = options.api || ReactiveRestApi({ client, fromServer, toServer })
 
+  const save = (data) => {
+    const url = data.id ? `${slug}/${data.id}${SLASH}` : `${slug}${SLASH}`
+    return api.post(url, data)
+  }
+
+  const _bouncers = {}
+  const bounceSave = (data) => {
+    if (!_bouncers[data.id]) {
+      _bouncers[data.id] = debounce((data) => save(data), 1000)
+    }
+    _bouncers[data.id](data)
+  }
+
   return {
     api,
+    save,
+    bounceSave,
     getOne: (id) => {
       return api.get(`${slug}/${id}${SLASH}`)
     },
+    fetchOne: (id) => {
+      return api.fetch(`${slug}/${id}${SLASH}`)
+    },
     getPage: ({ page, limit = 25, query = {} } = {}) => {
+      // TODO generalize fetch query string
       const qs = querystring.stringify({ page, limit, ...query })
       return api.get(`${collection_slug}${SLASH}?${qs}`)
     },
-    save(data) {
-      const url = data.id ? `${slug}/${data.id}${SLASH}` : `${slug}${SLASH}`
-      return api.post(url, data)
+    fetchPage: ({ page, limit = 25, query = {} } = {}) => {
+      const qs = querystring.stringify({ page, limit, ...query })
+      return api.fetch(`${collection_slug}${SLASH}?${qs}`)
     },
     delete: ({ id }) => api.delete(`${slug}/${id}${SLASH}`),
   }
