@@ -3,6 +3,9 @@ import MemoryStorage from './MemoryStorage'
 import _ls from 'local-storage-json'
 
 export const ReactiveLocalStorage = (options = {}) => {
+  if (typeof options === 'string') {
+    options = { LS_KEY: options }
+  }
   const { LS_KEY, initial = {}, ls = _ls } = options
   const state = reactive(ls.get(LS_KEY) || initial)
   const save = (data) => {

@@ -64,6 +64,7 @@ export const ReactiveRestApi = (options = {}) => {
         })
         .catch((error) => {
           state.loading[url] = false
+          state.byUrl[url] = { error }
           pending[url]?.forEach(([_, reject]) => reject(error))
           throw error
         })
