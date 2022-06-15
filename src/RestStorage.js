@@ -7,12 +7,12 @@ export const getCSRF = (cookie = '') => {
   return cookie.match(/csrftoken=([^;]+)/)?.[1] || ''
 }
 
-export const getClient = () => {
+export const getClient = ({ baseURL = '/api/' } = {}) => {
   const handleError = (e) => {
     throw e
   }
   const client = axios.create({
-    baseURL: '/api/',
+    baseURL,
     transformRequest(data, headers) {
       const csrf = getCSRF(typeof document === 'undefined' ? '' : document.cookie)
       headers.delete['X-CSRFToken'] = csrf

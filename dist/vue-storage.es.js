@@ -141,7 +141,7 @@ const ReactiveLocalStorage = (options = {}) => {
     options = { LS_KEY: options };
   }
   const { LS_KEY, initial = {}, ls = localStorageJson } = options;
-  const state = reactive(ls.get(LS_KEY) || initial);
+  const state = reactive(__spreadValues(__spreadValues({}, initial), ls.get(LS_KEY)));
   const save = (data2) => {
     Object.assign(state, data2);
     ls.set(LS_KEY, state);
@@ -151,7 +151,7 @@ const ReactiveLocalStorage = (options = {}) => {
 var LocalStorage = (slug, _b = {}) => {
   var _c = _b, { ls = localStorageJson } = _c, options = __objRest(_c, ["ls"]);
   const LS_KEY = `LocalStorage:${slug}`;
-  options.initial = ls.get(LS_KEY) || options.initial;
+  options.initial = __spreadValues(__spreadValues({}, options.initial), ls.get(LS_KEY));
   options.afterSave = (state) => ls.set(LS_KEY, state);
   const store = MemoryStorage(slug, options);
   store.LS_KEY = LS_KEY;
@@ -1506,12 +1506,12 @@ const getCSRF = (cookie = "") => {
   var _a;
   return ((_a = cookie.match(/csrftoken=([^;]+)/)) == null ? void 0 : _a[1]) || "";
 };
-const getClient = () => {
+const getClient = ({ baseURL = "/api/" } = {}) => {
   const handleError = (e) => {
     throw e;
   };
   const client = axios.create({
-    baseURL: "/api/",
+    baseURL,
     transformRequest(data2, headers) {
       const csrf = getCSRF(typeof document === "undefined" ? "" : document.cookie);
       headers.delete["X-CSRFToken"] = csrf;
