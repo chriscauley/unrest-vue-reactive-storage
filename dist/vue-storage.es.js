@@ -1526,16 +1526,27 @@ const getClient = ({ baseURL = "/api/" } = {}) => {
 const noop = (a) => a;
 const ReactiveRestApi = (options = {}) => {
   const { client = getClient(), fromServer = noop, toServer = noop } = options;
-  let stale_at = new Date().valueOf();
   const url_fetched_at = {};
   const pending = {};
   const state = reactive({
     loading: {},
     byUrl: {},
-    byId: {}
+    byId: {},
+    stale_at: new Date().valueOf()
   });
+  const commit = (item) => {
+    state.byId[item] = __spreadValues(__spreadValues({}, state.byId[item]), fromServer(item));
+  };
+  const lookup = (data2) => {
+    if (data2.id) {
+      return state.byId[data2.id];
+    } else if (data2.items) {
+      return data2.items.map((item) => state.byId[item.id]);
+    }
+    return data2;
+  };
   const fetch = (url) => {
-    const needs_fetch = stale_at > url_fetched_at[url] || !state.byUrl[url];
+    const needs_fetch = state.stale_at > url_fetched_at[url] || !state.byUrl[url];
     if (state.loading[url]) {
       pending[url] = pending[url] || [];
       const promise = new Promise((resolve, reject) => pending[url].push([resolve, reject]));
@@ -1547,15 +1558,13 @@ const ReactiveRestApi = (options = {}) => {
         url_fetched_at[url] = new Date().valueOf();
         state.byUrl[url] = data2;
         if (data2.id) {
-          state.byId[data2.id] = fromServer(data2);
+          commit(data2);
         } else if (data2.items) {
-          data2.items.forEach((item) => state.byId[item.id] = fromServer(item));
-        } else {
-          state.byUrl[url] = fromServer(data2);
+          data2.items.forEach(commit);
         }
         state.loading[url] = false;
         (_a = pending[url]) == null ? void 0 : _a.forEach(([resolve]) => resolve(data2));
-        return data2;
+        return lookup(data2);
       }).catch((error) => {
         var _a;
         state.loading[url] = false;
@@ -1564,14 +1573,14 @@ const ReactiveRestApi = (options = {}) => {
         throw error;
       });
     }
-    return Promise.resolve(state.byUrl[url]);
+    return Promise.resolve(lookup(state.byUrl[url]));
   };
   const get = (url) => {
     fetch(url);
     return state.byUrl[url];
   };
   const markStale = (result) => {
-    stale_at = new Date().valueOf();
+    state.stale_at = new Date().valueOf();
     return result;
   };
   return {
@@ -1620,7 +1629,8 @@ var RestStorage = (slug, options = {}) => {
       const qs = querystring.stringify(__spreadValues({ page, limit }, query));
       return api.fetch(`${collection_slug}${SLASH}?${qs}`);
     },
-    delete: ({ id }) => api.delete(`${slug}/${id}${SLASH}`)
+    delete: ({ id }) => api.delete(`${slug}/${id}${SLASH}`),
+    commit: (data2) => api.commit(data2)
   };
 };
 var index = {
