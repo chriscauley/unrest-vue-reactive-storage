@@ -39,8 +39,8 @@ export const ReactiveRestApi = (options = {}) => {
   })
 
   const commit = (item) => {
-    state.byId[item] = {
-      ...state.byId[item],
+    state.byId[item.id] = {
+      ...state.byId[item.id],
       ...fromServer(item),
     }
   }

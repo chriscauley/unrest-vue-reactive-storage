@@ -1535,7 +1535,7 @@ const ReactiveRestApi = (options = {}) => {
     stale_at: new Date().valueOf()
   });
   const commit = (item) => {
-    state.byId[item] = __spreadValues(__spreadValues({}, state.byId[item]), fromServer(item));
+    state.byId[item.id] = __spreadValues(__spreadValues({}, state.byId[item.id]), fromServer(item));
   };
   const lookup = (data2) => {
     if (data2.id) {
