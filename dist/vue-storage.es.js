@@ -1517,6 +1517,8 @@ const getClient = ({ baseURL = "/api/" } = {}) => {
       headers.delete["X-CSRFToken"] = csrf;
       headers.post["X-CSRFToken"] = csrf;
       headers.post["Content-Type"] = "application/json";
+      headers.put["X-CSRFToken"] = csrf;
+      headers.put["Content-Type"] = "application/json";
       return JSON.stringify(data2);
     }
   });
@@ -1525,7 +1527,7 @@ const getClient = ({ baseURL = "/api/" } = {}) => {
 };
 const noop = (a) => a;
 const ReactiveRestApi = (options = {}) => {
-  const { client = getClient(), fromServer = noop, toServer = noop } = options;
+  const { client = getClient(), fromServer = noop, toServer = noop, live_api } = options;
   const url_fetched_at = {};
   const pending = {};
   const state = reactive({
@@ -1589,8 +1591,16 @@ const ReactiveRestApi = (options = {}) => {
     get,
     markStale,
     post: (url, data2) => client.post(url, toServer(data2)).then(markStale),
-    put: (url, data2) => client.put(url, toServer(data2)).then(markStale),
     delete: (url, data2 = {}) => client.delete(url, { data: data2 }).then(markStale),
+    put: async (url, data2) => {
+      const result = await client.put(url, toServer(data2));
+      if (live_api) {
+        state.byUrl[url] = result;
+      } else {
+        markStale();
+      }
+      return result;
+    },
     isLoading: (url) => state.loading[url]
   };
 };
@@ -1601,8 +1611,10 @@ var RestStorage = (slug, options = {}) => {
   const client = options.client || getClient();
   const api = options.api || ReactiveRestApi({ client, fromServer, toServer });
   const save = (data2) => {
-    const url = data2.id ? `${slug}/${data2.id}${SLASH}` : `${slug}${SLASH}`;
-    return api.post(url, data2);
+    if (data2.id) {
+      return api.put(`${slug}/${data2.id}${SLASH}`, data2);
+    }
+    return api.post(`${slug}${SLASH}`, data2);
   };
   const _bouncers = {};
   const bounceSave = (data2) => {
