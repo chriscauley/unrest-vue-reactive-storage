@@ -18,6 +18,8 @@ export const getClient = ({ baseURL = '/api/' } = {}) => {
       headers.delete['X-CSRFToken'] = csrf
       headers.post['X-CSRFToken'] = csrf
       headers.post['Content-Type'] = 'application/json'
+      headers.put['X-CSRFToken'] = csrf
+      headers.put['Content-Type'] = 'application/json'
       return JSON.stringify(data)
     },
   })
@@ -28,7 +30,7 @@ export const getClient = ({ baseURL = '/api/' } = {}) => {
 const noop = (a) => a
 
 export const ReactiveRestApi = (options = {}) => {
-  const { client = getClient(), fromServer = noop, toServer = noop } = options
+  const { client = getClient(), fromServer = noop, toServer = noop, live_api } = options
   const url_fetched_at = {}
   const pending = {}
   const state = reactive({
@@ -102,8 +104,16 @@ export const ReactiveRestApi = (options = {}) => {
     get,
     markStale,
     post: (url, data) => client.post(url, toServer(data)).then(markStale),
-    put: (url, data) => client.put(url, toServer(data)).then(markStale),
     delete: (url, data = {}) => client.delete(url, { data }).then(markStale),
+    put: async (url, data) => {
+      const result = await client.put(url, toServer(data))
+      if (live_api) {
+        state.byUrl[url] = result
+      } else {
+        markStale()
+      }
+      return result
+    },
     isLoading: (url) => state.loading[url],
   }
 }
@@ -116,8 +126,10 @@ export default (slug, options = {}) => {
   const api = options.api || ReactiveRestApi({ client, fromServer, toServer })
 
   const save = (data) => {
-    const url = data.id ? `${slug}/${data.id}${SLASH}` : `${slug}${SLASH}`
-    return api.post(url, data)
+    if (data.id) {
+      return api.put(`${slug}/${data.id}${SLASH}`, data)
+    }
+    return api.post(`${slug}${SLASH}`, data)
   }
 
   const _bouncers = {}
